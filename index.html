@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Decide4me — nutrition-aware breakfast, lunch and dinner planner." />
+  <title>Decide4me — Smart Meal Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#176b45" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Decide4me home">
+      <span class="brand-icon">🍽️</span>
+      <span>
+        <strong>Decide4me</strong>
+        <small>Smart Meal Planner</small>
+      </span>
+    </a>
+    <div class="top-actions">
+      <button id="installBtn" class="install-button hidden" type="button" aria-label="Install Decide4me">
+        Install App
+      </button>
+      <div class="data-pill" id="dataPill">Loading food database…</div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Nutrition-aware planning</span>
+        <h1>Choose meals with a reason — not a random number.</h1>
+        <p>
+          Pick breakfast, lunch, dinner or all three. Decide4me ranks foods by
+          meal fit, nutrient profile and your recent food history.
+        </p>
+      </div>
+      <div class="hero-note">
+        <strong>Data source</strong>
+        <span>USDA FoodData Central / FNDDS</span>
+        <small>Nutrient values shown per 100 g unless the source states otherwise.</small>
+      </div>
+    </section>
+
+    <section id="plannerView" class="layout">
+      <div class="panel">
+        <div class="section-heading">
+          <div>
+            <span class="step">1</span>
+            <h2>What do you want planned?</h2>
+          </div>
+          <p>Select one or more meal periods.</p>
+        </div>
+
+        <div class="meal-picker" id="mealPicker">
+          <label class="meal-choice">
+            <input type="checkbox" value="breakfast" checked />
+            <span class="emoji">🌅</span>
+            <span><strong>Breakfast</strong><small>Morning meal</small></span>
+            <span class="check">✓</span>
+          </label>
+          <label class="meal-choice">
+            <input type="checkbox" value="lunch" checked />
+            <span class="emoji">☀️</span>
+            <span><strong>Lunch</strong><small>Midday meal</small></span>
+            <span class="check">✓</span>
+          </label>
+          <label class="meal-choice">
+            <input type="checkbox" value="dinner" checked />
+            <span class="emoji">🌙</span>
+            <span><strong>Dinner</strong><small>Evening meal</small></span>
+            <span class="check">✓</span>
+          </label>
+        </div>
+
+        <div class="section-heading top-gap">
+          <div>
+            <span class="step">2</span>
+            <h2>What matters most today?</h2>
+          </div>
+          <p>This changes the ranking, not the source nutrition data.</p>
+        </div>
+
+        <div class="field-grid">
+          <label class="field">
+            <span>Nutrition priority</span>
+            <select id="priority">
+              <option value="balanced">Balanced</option>
+              <option value="protein">Higher protein</option>
+              <option value="fiber">Higher fiber</option>
+              <option value="sodium">Lower sodium</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Food preference</span>
+            <select id="diet">
+              <option value="all">No preference</option>
+              <option value="vegetarian">Vegetarian-style</option>
+              <option value="vegan">Vegan-style</option>
+            </select>
+          </label>
+
+          <label class="field wide">
+            <span>Foods/ingredients to avoid</span>
+            <input id="avoidInput" type="text" placeholder="e.g. shrimp, pork, peanut" />
+            <small>Preference filter only — do not rely on this for allergy safety.</small>
+          </label>
+        </div>
+
+        <div class="section-heading top-gap">
+          <div>
+            <span class="step">3</span>
+            <h2>Add what you ate recently</h2>
+          </div>
+          <p>Recent foods are strongly down-ranked so your plan has more variety.</p>
+        </div>
+
+        <div class="history-entry">
+          <select id="historyMealType" aria-label="Meal type">
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+          </select>
+          <div class="autocomplete-wrap">
+            <input
+              id="foodInput"
+              type="text"
+              list="foodOptions"
+              autocomplete="off"
+              placeholder="Search the USDA food list…"
+            />
+            <datalist id="foodOptions"></datalist>
+          </div>
+          <button id="addHistoryBtn" class="button secondary" type="button">Add</button>
+        </div>
+
+        <div id="historyTags" class="tags" aria-live="polite"></div>
+
+        <button id="generateBtn" class="button primary big" type="button">
+          <span>✨ Build my smart plan</span>
+          <small>No random selection</small>
+        </button>
+
+        <div id="errorBox" class="error-box hidden" role="alert"></div>
+      </div>
+
+      <aside class="panel info-panel">
+        <h3>How recommendations work</h3>
+        <div class="logic-item">
+          <span>1</span>
+          <div><strong>Meal fit</strong><small>Breakfast foods stay in breakfast; lunch and dinner are ranked separately.</small></div>
+        </div>
+        <div class="logic-item">
+          <span>2</span>
+          <div><strong>Nutrition fit</strong><small>Protein and fiber are rewarded; very high sodium and saturated fat are down-ranked.</small></div>
+        </div>
+        <div class="logic-item">
+          <span>3</span>
+          <div><strong>Variety</strong><small>Foods in your recent history and foods already used this week lose points.</small></div>
+        </div>
+        <div class="logic-item">
+          <span>4</span>
+          <div><strong>Explainability</strong><small>Every result shows its nutrient values and why it scored well.</small></div>
+        </div>
+        <div class="disclaimer">
+          <strong>Important</strong>
+          <p>
+            Decide4me is a general meal-planning project, not medical or dietetic advice.
+            Nutrition needs differ between people and medical conditions.
+          </p>
+        </div>
+      </aside>
+    </section>
+
+    <section id="resultView" class="results hidden">
+      <div class="results-head">
+        <div>
+          <span class="eyebrow">Your plan</span>
+          <h2>Nutrition-ranked recommendations</h2>
+          <p id="resultSummary"></p>
+        </div>
+        <button id="editBtn" class="button outline" type="button">← Edit choices</button>
+      </div>
+
+      <div id="todayCards" class="today-grid"></div>
+
+      <div class="panel weekly-panel">
+        <div class="table-head">
+          <div>
+            <h3>7-day plan</h3>
+            <p>The same scoring system is used for every day, with a variety penalty to reduce repeats.</p>
+          </div>
+          <button id="regenerateBtn" class="button secondary compact" type="button">Re-rank plan</button>
+        </div>
+        <div class="table-scroll">
+          <table id="scheduleTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="source-card">
+        <div>
+          <strong>Nutrition source: USDA FoodData Central</strong>
+          <p>
+            This build stores FoodData Central search results as a static JSON file so your GitHub Pages site
+            does not expose an API key.
+          </p>
+        </div>
+        <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">View source ↗</a>
+      </div>
+    </section>
+    <section class="panel team-panel">
+  <div class="team-title">
+    <span class="eyebrow">Our Team</span>
+    <h2>Project Team Members</h2>
+    <p>Decide4me Smart Meal Planner development team</p>
+  </div>
+
+  <div class="team-grid">
+
+    <div class="team-member">
+      <div class="member-avatar">MK</div>
+      <div>
+        <h3>Min Thurain Kyaw</h3>
+        <p>240702404759</p>
+      </div>
+    </div>
+
+    <div class="team-member">
+      <div class="member-avatar">SS</div>
+      <div>
+        <h3>Sai Tun Sint Naing</h3>
+        <p>250702404346</p>
+      </div>
+    </div>
+
+    <div class="team-member">
+      <div class="member-avatar">TM</div>
+      <div>
+        <h3>Thant Zin Myo Minn</h3>
+        <p>250702401704</p>
+      </div>
+    </div>
+
+    <div class="team-member">
+      <div class="member-avatar">NA</div>
+      <div>
+        <h3>Nyan Zin Aung</h3>
+        <p>250702401979</p>
+      </div>
+    </div>
+
+    <div class="team-member">
+      <div class="member-avatar">TY</div>
+      <div>
+        <h3>Thu Thu Yin Mon</h3>
+        <p>240702404685</p>
+      </div>
+    </div>
+
+    <div class="team-member">
+      <div class="member-avatar">SH</div>
+      <div>
+        <h3>Swan Min Htet</h3>
+        <p>240702404482</p>
+      </div>
+    </div>
+
+    <div class="team-member">
+      <div class="member-avatar">FT</div>
+      <div>
+        <h3>Faisal Tohvala</h3>
+        <p>680702402797</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+  </main>
+
+  <footer>
+    <span>Decide4me</span>
+    <span>•</span>
+    <span>Student project</span>
+    <span>•</span>
+    <span>Nutrition data: USDA FoodData Central</span>
+  </footer>
+
+  <script src="app.js" defer></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js", { scope: "./" })
+          .then(() => console.log("Decide4me service worker registered"))
+          .catch(error => console.error("Service worker registration failed:", error));
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "decide4me-smart-meal-planner",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:data": "node tools/build-usda-db.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
